@@ -1628,3 +1628,8 @@
 {"level":"info","message":"::ffff:10.44.91.189 - - [20/Mar/2026:14:47:48 +0000] \"PATCH /api/chat/read HTTP/1.1\" 200 28 \"-\" \"okhttp/4.9.2\""}
 {"level":"info","message":"::ffff:10.44.91.189 - - [20/Mar/2026:14:47:48 +0000] \"GET /api/chat/69ba73a3a4394fd66fc857b4 HTTP/1.1\" 304 - \"-\" \"okhttp/4.9.2\""}
 {"level":"info","message":"::ffff:10.44.91.189 - - [20/Mar/2026:14:47:54 +0000] \"GET /api/user/sessions HTTP/1.1\" 304 - \"-\" \"okhttp/4.9.2\""}
+{"level":"info","message":"::ffff:172.16.2.49 - - [21/Mar/2026:05:01:00 +0000] \"POST /api/auth/login HTTP/1.1\" 200 275 \"-\" \"okhttp/4.9.2\""}
+{"level":"info","message":"::ffff:172.16.2.49 - - [21/Mar/2026:05:01:15 +0000] \"POST /api/auth/login HTTP/1.1\" 200 293 \"-\" \"okhttp/4.9.2\""}
+{"level":"info","message":"::ffff:172.16.2.49 - - [21/Mar/2026:05:01:18 +0000] \"GET /api/therapist/sessions HTTP/1.1\" 200 2142 \"-\" \"okhttp/4.9.2\""}
+{"level":"info","message":"::ffff:172.16.2.49 - - [21/Mar/2026:05:01:18 +0000] \"GET /api/transactions/earnings HTTP/1.1\" 200 1395 \"-\" \"okhttp/4.9.2\""}
+{"level":"info","message":"::ffff:172.16.2.49 - - [21/Mar/2026:05:01:18 +0000] \"GET /api/chat/conversations HTTP/1.1\" 200 260 \"-\" \"okhttp/4.9.2\""}
