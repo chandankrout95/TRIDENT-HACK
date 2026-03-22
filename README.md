@@ -48,6 +48,7 @@
 ## 🚢 Deployment & DevOps
 
 ### **🐳 Dockerize the Backend**
+dockerhub link:-https://hub.docker.com/r/bigyajeetpatra36/mental-health-api
 To run the FastAPI server inside a container:
 ```bash
 # Build the image
