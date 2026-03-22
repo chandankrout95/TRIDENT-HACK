@@ -1,0 +1,47 @@
+# --- Virtual Environment ---
+env/
+venv/
+ENV/
+.env/
+bin/
+include/
+lib/
+share/
+pyvenv.cfg
+
+# --- Python Cache & Temporary Files ---
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.ipynb_checkpoints/
+
+# --- Model & Large Data Files ---
+# (Keep the .csv if you want others to see the data, 
+# but usually, we ignore large datasets and .pkl models)
+*.csv
+*.pkl
+*.joblib
+
+# --- Local Project Files ---
+plots/
+*.png
+*.jpg
+*.log
+
+# --- OS Specific ---
+.DS_Store
+Thumbs.db
+
+# --- IDEs ---
+.vscode/
+.idea/
+
+env/
+venv/
+Dataset/
+model/
+__pycache__/
+.ipynb_checkpoints/
+*.py[cod]
+*$py.class
