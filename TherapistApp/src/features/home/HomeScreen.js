@@ -53,8 +53,17 @@ const HomeScreen = () => {
       setSessions(prev => [appointment, ...prev]);
     };
 
+    const onStatusUpdate = (updatedSess) => {
+      setSessions(prev => prev.map(s => s._id === updatedSess._id ? { ...s, status: updatedSess.status } : s));
+    };
+
     socket.on('new_appointment', onNewAppointment);
-    return () => socket.off('new_appointment', onNewAppointment);
+    socket.on('session_status_update', onStatusUpdate);
+    
+    return () => {
+      socket.off('new_appointment', onNewAppointment);
+      socket.off('session_status_update', onStatusUpdate);
+    };
   }, []);
 
   const activeSessions = sessions.filter(s => s.status === 'confirmed').length;
@@ -105,7 +114,7 @@ const HomeScreen = () => {
           </TouchableOpacity>
           <View style={styles.headerTextContainer}>
             <Text style={styles.greeting}>{greeting()}</Text>
-            <Text style={styles.userName}>Dr. {user?.email?.split('@')[0] || 'Therapist'} ✨</Text>
+            <Text style={styles.userName}> {user?.name || user?.email?.split('@')[0] || 'Therapist'} ✨</Text>
           </View>
         </View>
         <TouchableOpacity style={styles.notificationBtn} onPress={() => navigation.navigate('NotificationScreen')}>
@@ -114,8 +123,8 @@ const HomeScreen = () => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView 
-        showsVerticalScrollIndicator={false} 
+      <ScrollView
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#10B981']} />
@@ -125,28 +134,28 @@ const HomeScreen = () => {
         <Animated.View entering={FadeInDown.delay(100)} style={styles.statusCardContainer}>
           <View style={styles.statusCard}>
             <View style={styles.statusHeader}>
-                <Text style={styles.statusLabel}>Dashboard Overview</Text>
-                <View style={styles.liveIndicator}>
-                    <View style={styles.liveDot} />
-                    <Text style={styles.liveText}>LIVE</Text>
-                </View>
+              <Text style={styles.statusLabel}>Dashboard Overview</Text>
+              <View style={styles.liveIndicator}>
+                <View style={styles.liveDot} />
+                <Text style={styles.liveText}>LIVE</Text>
+              </View>
             </View>
-            
+
             <View style={styles.statsRow}>
-                <View style={styles.statItem}>
-                    <Text style={styles.statValue}>{activeSessions}</Text>
-                    <Text style={styles.statLabel}>Active</Text>
-                </View>
-                <View style={styles.statDivider} />
-                <View style={styles.statItem}>
-                    <Text style={styles.statValue}>{completedSessions}</Text>
-                    <Text style={styles.statLabel}>Completed</Text>
-                </View>
-                <View style={styles.statDivider} />
-                <View style={styles.statItem}>
-                    <Text style={styles.statValue}>4.9</Text>
-                    <Text style={styles.statLabel}>Rating</Text>
-                </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>{activeSessions}</Text>
+                <Text style={styles.statLabel}>Active</Text>
+              </View>
+              <View style={styles.statDivider} />
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>{completedSessions}</Text>
+                <Text style={styles.statLabel}>Completed</Text>
+              </View>
+              <View style={styles.statDivider} />
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>{user?.therapistProfile?.rating || '0.0'}</Text>
+                <Text style={styles.statLabel}>Rating</Text>
+              </View>
             </View>
           </View>
         </Animated.View>
@@ -157,7 +166,7 @@ const HomeScreen = () => {
         </View>
         <Animated.View entering={FadeInRight.delay(200)}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.todayCardsScroll}>
-            <View style={[styles.todayCard, { backgroundColor: '#F0FDF4' }]}>  
+            <View style={[styles.todayCard, { backgroundColor: '#F0FDF4' }]}>
               <View style={[styles.todayCardIcon, { backgroundColor: '#DCFCE7' }]}>
                 <Icon name="calendar-clock" size={24} color="#10B981" />
               </View>
@@ -182,8 +191,8 @@ const HomeScreen = () => {
               <View style={[styles.todayCardIcon, { backgroundColor: '#F3E8FF' }]}>
                 <Icon name="star-outline" size={24} color="#A855F7" />
               </View>
-              <Text style={styles.todayCardValue}>4.9</Text>
-              <Text style={styles.todayCardLabel}>Avg Rating</Text>
+              <Text style={styles.statValue}>{user?.therapistProfile?.rating || '0.0'}</Text>
+              <Text style={styles.statLabel}>Avg Rating</Text>
             </View>
           </ScrollView>
         </Animated.View>
@@ -217,7 +226,7 @@ const HomeScreen = () => {
         ) : (
           conversations.slice(0, 3).map((convo, index) => (
             <Animated.View key={convo.partnerId} entering={FadeInUp.delay(100 * index)}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.messageCard}
                 activeOpacity={0.7}
                 onPress={() => navigation.navigate('ChatScreen', {
@@ -280,7 +289,7 @@ const HomeScreen = () => {
         ) : (
           sessions.filter(s => s.status === 'confirmed').slice(0, 3).map((session, index) => (
             <Animated.View key={session._id || index} entering={FadeInUp.delay(100 * index)}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.appointmentCard}
                 onPress={() => navigation.navigate('Appointments')}
               >
@@ -288,8 +297,8 @@ const HomeScreen = () => {
                   <Text style={styles.timeText}>{session.timeSlot?.split(' - ')[0] || '09:00'}</Text>
                 </View>
                 <View style={styles.appointmentInfo}>
-                   <Text style={styles.clientLabel}>Client</Text>
-                   <Text style={styles.clientName}>#{String(session.user?._id || session.user || '').substring(0,8)}</Text>
+                  <Text style={styles.clientLabel}>Client</Text>
+                  <Text style={styles.clientName}>#{String(session.user?._id || session.user || '').substring(0, 8)}</Text>
                 </View>
                 <View style={styles.sessionStatusBadge}>
                   <Icon name="check-circle" size={18} color="#10B981" />
@@ -363,7 +372,7 @@ const HomeScreen = () => {
             </View>
           )}
         </Animated.View>
-        
+
         {/* Performance Insights */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Performance Insights</Text>
@@ -409,8 +418,8 @@ const styles = StyleSheet.create({
   headerTextContainer: { marginLeft: 12 },
   greeting: { fontSize: 13, color: '#6B7280', fontWeight: '500' },
   userName: { fontSize: 20, fontWeight: '800', color: '#111827', marginTop: 2 },
-  profileBtn: { 
-    shadowColor: '#10B981', shadowOpacity: 0.2, shadowRadius: 8, elevation: 4 
+  profileBtn: {
+    shadowColor: '#10B981', shadowOpacity: 0.2, shadowRadius: 8, elevation: 4
   },
   avatarPlaceholder: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#D1FAE5', justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: '#10B981' },
   notificationBtn: { width: 44, height: 44, borderRadius: 14, backgroundColor: '#F3F4F6', justifyContent: 'center', alignItems: 'center', position: 'relative' },
@@ -434,10 +443,10 @@ const styles = StyleSheet.create({
 
   // Today's Overview Cards
   todayCardsScroll: { marginLeft: -4 },
-  todayCard: { 
-    width: 130, 
-    padding: 16, 
-    borderRadius: 20, 
+  todayCard: {
+    width: 130,
+    padding: 16,
+    borderRadius: 20,
     marginRight: 12,
     marginLeft: 4,
   },
@@ -456,10 +465,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#F3F4F6',
   },
-  messageAvatar: { 
-    width: 44, height: 44, borderRadius: 16, 
-    backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center', 
-    marginRight: 14 
+  messageAvatar: {
+    width: 44, height: 44, borderRadius: 16,
+    backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center',
+    marginRight: 14
   },
   messageAvatarUnread: { backgroundColor: '#10B981' },
   messageContent: { flex: 1 },
@@ -471,12 +480,12 @@ const styles = StyleSheet.create({
   unreadText: { color: '#FFF', fontSize: 10, fontWeight: '800' },
 
   // Upcoming Sessions
-  appointmentCard: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    backgroundColor: '#FAFAFA', 
-    borderRadius: 24, 
-    padding: 16, 
+  appointmentCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FAFAFA',
+    borderRadius: 24,
+    padding: 16,
     marginBottom: 12,
     borderWidth: 1,
     borderColor: '#F3F4F6'

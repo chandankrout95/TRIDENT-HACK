@@ -25,10 +25,11 @@ const CallingScreen = () => {
     skipRinging = false, callerId: incomingCallerId,
   } = route.params || {};
 
-  const { therapist } = useSelector(s => s.auth);
+  const { user: therapist } = useSelector(s => s.auth);
   const engineRef = useRef(null);
   const socketRef = useRef(null);
   const timeoutRef = useRef(null);
+  const targetChannelRef = useRef(channelName || `session_${Date.now()}`);
 
   const [callState, setCallState] = useState(skipRinging ? 'connecting' : 'ringing');
   const [seconds, setSeconds] = useState(0);
@@ -124,29 +125,42 @@ const CallingScreen = () => {
     }
 
     try {
-      const channel = channelName || `session_${Date.now()}`;
-      const { data } = await apiClient.post('/agora/token', { channelName: channel, uid: 0 });
+      const channel = targetChannelRef.current;
+      const response = await apiClient.post('/agora/token', {
+        channelName: channel, uid: 0 });
 
       const engine = createAgoraRtcEngine();
       engineRef.current = engine;
 
-      engine.initialize({ appId: data.appId });
-      engine.setChannelProfile(ChannelProfileType.ChannelProfileCommunication);
-      engine.setClientRole(ClientRoleType.ClientRoleBroadcaster);
+      engine.initialize({ appId: response.data.appId });
       engine.enableAudio();
-      engine.setEnableSpeakerphone(true);
+      engine.enableLocalAudio(true);
+      engine.muteLocalAudioStream(false);
+      
+      engine.setChannelProfile(ChannelProfileType.ChannelProfileCommunication);
+      engine.setDefaultAudioRouteToSpeakerphone(isVideo);
 
       if (isVideo) {
         engine.enableVideo();
+        engine.enableLocalVideo(true);
         engine.startPreview();
       }
 
-      engine.addListener('onJoinChannelSuccess', () => setCallState('connected'));
+      engine.addListener('onJoinChannelSuccess', () => {
+        setCallState('connected');
+        engine.setEnableSpeakerphone(isVideo);
+      });
       engine.addListener('onUserJoined', (_conn, uid) => setRemoteUid(uid));
       engine.addListener('onUserOffline', () => { setRemoteUid(null); handleEndCall(); });
       engine.addListener('onError', (err) => console.error('Agora error:', err));
 
-      engine.joinChannel(data.token, channel, data.uid, {});
+      engine.joinChannel(response.data.token, channel, response.data.uid, {
+        clientRoleType: ClientRoleType.ClientRoleBroadcaster,
+        publishMicrophoneTrack: true,
+        publishCameraTrack: isVideo,
+        autoSubscribeAudio: true,
+        autoSubscribeVideo: true,
+      });
     } catch (err) {
       console.error('Agora init error:', err);
       Alert.alert('Connection Error', 'Unable to connect. Please try again.', [
@@ -168,7 +182,7 @@ const CallingScreen = () => {
         callerId: therapist?._id,
         callerName: therapist?.name || therapist?.email || 'Therapist',
         receiverId,
-        channelName,
+        channelName: targetChannelRef.current,
         isVideo,
       });
 

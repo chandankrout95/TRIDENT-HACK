@@ -5,8 +5,10 @@ import AppLayout from './shared/AppLayout';
 import Dashboard from './features/dashboard/Dashboard';
 import UsersList from './features/users/UsersList';
 import TherapistApprovals from './features/therapists/TherapistApprovals';
+import TherapistDetail from './features/therapists/TherapistDetail';
 import NotificationsSender from './features/notifications/NotificationsSender';
 import Reports from './features/reports/Reports';
+import EmergencyContacts from './features/emergency/EmergencyContacts';
 import Login from './features/auth/Login';
 
 // Placeholder Pages
@@ -32,9 +34,11 @@ function App() {
           <Route index element={<Dashboard />} />
           <Route path="users" element={<UsersList />} />
           <Route path="therapists" element={<TherapistApprovals />} />
+          <Route path="therapists/:id" element={<TherapistDetail />} />
           <Route path="sessions" element={<Sessions />} />
           <Route path="notifications" element={<NotificationsSender />} />
           <Route path="reports" element={<Reports />} />
+          <Route path="emergency" element={<EmergencyContacts />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

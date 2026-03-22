@@ -36,11 +36,11 @@ const getConversations = async (req, res, next) => {
         });
 
         // Partner info
-        const partner = await User.findById(partnerId).select('email role').lean();
+        const partner = await User.findById(partnerId).select('name email role').lean();
 
         return {
           partnerId,
-          partnerName: partner?.email || 'Unknown User',
+          partnerName: partner?.name || partner?.email || 'Unknown User',
           partnerRole: partner?.role || 'user',
           lastMessage: lastMessage ? {
             _id: lastMessage._id,

@@ -6,7 +6,9 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { setCredentials } from '../../store/authSlice';
+import apiClient from '../../services/apiClient';
 
 // ─── Shared header used by all sub-screens ─────────────────────────────────
 const SubHeader = ({ title, right }) => {
@@ -31,40 +33,99 @@ const sh = StyleSheet.create({
 
 // ─── 1. Personal Information ────────────────────────────────────────────────
 export const PersonalInfoScreen = () => {
-  const { user } = useSelector(s => s.auth);
+  const { user, token } = useSelector(s => s.auth);
+  const dispatch = useDispatch();
   const insets = useSafeAreaInsets();
-  const [name,  setName]  = useState(user?.email?.split('@')[0] || 'User');
-  const [email, setEmail] = useState(user?.email || '');
-  const [phone, setPhone] = useState('');
-  const [dob,   setDob]   = useState('');
+  
+  const [name, setName] = useState(user?.name || user?.email?.split('@')[0] || 'User');
+  const [email] = useState(user?.email || ''); // Readonly
+  const [phone, setPhone] = useState(user?.phone || '');
+  
+  const [dob, setDob] = useState(() => {
+    if (user?.dob) {
+      const d = new Date(user.dob);
+      return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+    }
+    return '';
+  });
+  const [age, setAge] = useState(user?.age?.toString() || '');
+  const [hobby, setHobby] = useState(user?.hobby || '');
+  const [occupation, setOccupation] = useState(user?.occupation || '');
+  const [bio, setBio] = useState(user?.bio || '');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const save = () => Alert.alert('Saved', 'Your information has been updated.');
+  const handleDobChange = (text) => {
+    let clean = text.replace(/[^0-9]/g, '');
+    if (clean.length > 8) clean = clean.substring(0, 8);
+    let formatted = clean;
+    if (clean.length > 2) formatted = clean.substring(0, 2) + '/' + clean.substring(2);
+    if (clean.length > 4) formatted = formatted.substring(0, 5) + '/' + clean.substring(4);
+    setDob(formatted);
+  };
+
+  const save = async () => {
+    setIsLoading(true);
+    try {
+      const payload = { name, phone, hobby, occupation, bio, age: parseInt(age) || undefined };
+      if (dob && dob.length === 10) {
+        const parts = dob.split('/');
+        if (parts.length === 3) {
+          payload.dob = new Date(parts[2], parts[1] - 1, parts[0]).toISOString();
+        }
+      }
+      const res = await apiClient.put('/auth/user-info', payload);
+      dispatch(setCredentials({ token, user: { ...user, ...res.data.user } }));
+      Alert.alert('Success', 'Your information has been updated.');
+    } catch(err) {
+      Alert.alert('Error', err.response?.data?.message || err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <View style={ps.root}>
       <StatusBar backgroundColor="#FFF" barStyle="dark-content" />
       <SubHeader title="Personal Information" right={
-        <TouchableOpacity onPress={save}><Text style={{ color: '#2563EB', fontWeight: '700' }}>Save</Text></TouchableOpacity>
+        <TouchableOpacity onPress={save} disabled={isLoading}>
+          <Text style={{ color: isLoading ? '#9CA3AF' : '#2563EB', fontWeight: '700' }}>{isLoading ? 'Wait' : 'Save'}</Text>
+        </TouchableOpacity>
       } />
       <ScrollView contentContainerStyle={[ps.scroll, { paddingBottom: insets.bottom + 24 }]}>
-        {[
-          { label: 'Full Name', value: name, setter: setName, keyboard: 'default' },
-          { label: 'Email', value: email, setter: setEmail, keyboard: 'email-address' },
-          { label: 'Phone Number', value: phone, setter: setPhone, keyboard: 'phone-pad' },
-          { label: 'Date of Birth', value: dob, setter: setDob, keyboard: 'default', placeholder: 'DD / MM / YYYY' },
-        ].map(f => (
-          <View key={f.label} style={ps.field}>
-            <Text style={ps.fieldLabel}>{f.label}</Text>
-            <TextInput
-              style={ps.input}
-              value={f.value}
-              onChangeText={f.setter}
-              keyboardType={f.keyboard}
-              placeholder={f.placeholder || f.label}
-              placeholderTextColor="#9CA3AF"
-            />
+        <View style={ps.field}>
+          <Text style={ps.fieldLabel}>Full Name</Text>
+          <TextInput style={ps.input} value={name} onChangeText={setName} />
+        </View>
+        <View style={ps.field}>
+          <Text style={ps.fieldLabel}>Email Address</Text>
+          <TextInput style={[ps.input, { backgroundColor: '#F3F4F6', color: '#6B7280' }]} value={email} editable={false} />
+        </View>
+        <View style={ps.field}>
+          <Text style={ps.fieldLabel}>Phone Number</Text>
+          <TextInput style={ps.input} value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+        </View>
+        <View style={{ flexDirection: 'row', gap: 12 }}>
+          <View style={[ps.field, { flex: 1 }]}>
+            <Text style={ps.fieldLabel}>Age</Text>
+            <TextInput style={ps.input} value={age} onChangeText={setAge} keyboardType="numeric" maxLength={3} />
           </View>
-        ))}
+          <View style={[ps.field, { flex: 2 }]}>
+            <Text style={ps.fieldLabel}>Date of Birth</Text>
+            <TextInput style={ps.input} value={dob} onChangeText={handleDobChange} placeholder="DD/MM/YYYY" keyboardType="numeric" maxLength={10} />
+          </View>
+        </View>
+        <View style={ps.field}>
+          <Text style={ps.fieldLabel}>Occupation</Text>
+          <TextInput style={ps.input} value={occupation} onChangeText={setOccupation} />
+        </View>
+        <View style={ps.field}>
+          <Text style={ps.fieldLabel}>Hobbies</Text>
+          <TextInput style={ps.input} value={hobby} onChangeText={setHobby} />
+        </View>
+        <View style={ps.field}>
+          <Text style={ps.fieldLabel}>About Me</Text>
+          <TextInput style={[ps.input, { height: 100, textAlignVertical: 'top' }]} value={bio} onChangeText={setBio} multiline numberOfLines={4} />
+        </View>
       </ScrollView>
     </View>
   );

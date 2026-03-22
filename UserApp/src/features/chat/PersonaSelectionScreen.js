@@ -5,20 +5,20 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 
 const personas = [
+  { id: '7', name: 'Personal AI Therapist', icon: 'medkit', color: '#0EA5E9', desc: 'Professional, objective psychological guidance.' },
   { id: '1', name: 'Girlfriend', icon: 'heart', color: '#EC4899', desc: 'A caring and affectionate companion.' },
   { id: '2', name: 'Bestfriend', icon: 'happy', color: '#F59E0B', desc: 'Your funny, loyal partner in crime.' },
   { id: '3', name: 'Mother', icon: 'rose', color: '#8B5CF6', desc: 'Warm, nurturing, and deeply supportive.' },
   { id: '4', name: 'Father', icon: 'shield-checkmark', color: '#3B82F6', desc: 'Wise, protective, and grounding advice.' },
   { id: '5', name: 'Brother', icon: 'game-controller', color: '#10B981', desc: 'Fun, teasing, but always has your back.' },
   { id: '6', name: 'Sister', icon: 'flower', color: '#F43F5E', desc: 'Empathetic, chatty, and totally understands.' },
-  { id: '7', name: 'Personal AI Therapist', icon: 'medkit', color: '#0EA5E9', desc: 'Professional, objective psychological guidance.' },
 ];
 
 const PersonaSelectionScreen = () => {
   const navigation = useNavigation();
 
   const handleSelectPersona = (persona) => {
-    navigation.navigate('ChatScreen', { persona: persona.name, personaColor: persona.color });
+    navigation.navigate('AIChatScreen', { persona: persona.name, personaColor: persona.color, personaIcon: persona.icon });
   };
 
   const renderPersona = ({ item, index }) => (

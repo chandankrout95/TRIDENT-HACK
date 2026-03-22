@@ -34,6 +34,7 @@ const authSlice = createSlice({
       state.user = null;
       state.token = null;
       AsyncStorage.removeItem('userToken');
+      AsyncStorage.removeItem('persist:root');
     },
   },
   extraReducers: (builder) => {

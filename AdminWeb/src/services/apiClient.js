@@ -24,6 +24,11 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
+    if (error.response?.status === 401) {
+      console.warn('Unauthorized access. Clearing token and redirecting to login.');
+      localStorage.removeItem('adminToken');
+      window.location.href = '/';
+    }
     console.error('API Error:', error.response?.data?.message || error.message);
     return Promise.reject(error);
   }

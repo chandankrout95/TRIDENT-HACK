@@ -19,7 +19,7 @@ const TherapistProfileScreen = ({ route }) => {
 
   const infoItems = [
     { icon: 'briefcase-outline', label: 'Experience', value: `${therapist.yearsExperience || 5} years` },
-    { icon: 'cash-outline', label: 'Hourly Rate', value: `$${therapist.hourlyRate || 80}` },
+    { icon: 'cash-outline', label: 'Hourly Rate', value: `₹${therapist.hourlyRate || 80}` },
     { icon: 'chatbubbles-outline', label: 'Languages', value: (therapist.languages || ['English']).join(', ') },
     { icon: 'people-outline', label: 'Reviews', value: `${therapist.reviewCount || 0} reviews` },
   ];
@@ -115,7 +115,7 @@ const TherapistProfileScreen = ({ route }) => {
       <View style={styles.bottomBar}>
         <View>
           <Text style={styles.priceLabel}>Consultation Fee</Text>
-          <Text style={styles.priceValue}>${therapist.hourlyRate || 80}/hour</Text>
+          <Text style={styles.priceValue}>₹{therapist.hourlyRate || 80}/hour</Text>
         </View>
         <TouchableOpacity
           style={styles.bookBtn}

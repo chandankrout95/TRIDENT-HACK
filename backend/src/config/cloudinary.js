@@ -11,7 +11,8 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const storage = new CloudinaryStorage({
+// Chat images storage
+const chatStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: 'chat_images',
@@ -20,5 +21,16 @@ const storage = new CloudinaryStorage({
   },
 });
 
-export const upload = multer({ storage: storage });
+// Therapist document storage
+const documentCloudinaryStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'therapist_documents',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'pdf', 'webp'],
+    resource_type: 'auto',
+  },
+});
+
+export const upload = multer({ storage: chatStorage });
+export const documentUpload = multer({ storage: documentCloudinaryStorage });
 export { cloudinary };

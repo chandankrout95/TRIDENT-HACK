@@ -45,6 +45,12 @@ import usersRoutes from './routes/users.routes.js';
 import agoraRoutes from './routes/agora.routes.js';
 import uploadRoutes from './routes/upload.routes.js';
 import transactionsRoutes from './routes/transactions.routes.js';
+import goalsRoutes from './routes/goals.routes.js';
+import aiChatRoutes from './routes/aiChat.routes.js';
+import sleepTherapyRoutes from './routes/sleepTherapy.routes.js';
+import healthRoutes from './routes/health.routes.js';
+
+import fcmTokenRoutes from './routes/fcmToken.routes.js';
 
 // Route integration
 app.use('/api/auth', authRoutes);
@@ -62,6 +68,11 @@ app.use('/api/users', usersRoutes);
 app.use('/api/agora', agoraRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/transactions', transactionsRoutes);
+app.use('/api/goals', goalsRoutes);
+app.use('/api/ai-chat', aiChatRoutes);
+app.use('/api/sleep-therapy', sleepTherapyRoutes);
+app.use('/api/health', healthRoutes);
+app.use('/api/fcm', fcmTokenRoutes);
 
 // Error Handling Middleware
 

@@ -269,6 +269,97 @@ export const NotificationsSkeleton = () => (
   </View>
 );
 
+// ─── Sleep Predictor skeleton ────────────────────────────────────────────────
+export const SleepPredictorSkeleton = () => (
+  <View style={{ padding: 20 }}>
+    {/* Status Card placeholder */}
+    <View style={[skStyles.homeCard, { height: 200, alignItems: 'center', justifyContent: 'center', marginBottom: 25 }]}>
+      <SkeletonCircle size={60} style={{ marginBottom: 20 }} />
+      <SkeletonBox width="80%" height={20} radius={10} style={{ marginBottom: 15 }} />
+      <SkeletonBox width="50%" height={34} radius={17} />
+    </View>
+
+    {/* Advice Section placeholder */}
+    <View style={{ marginBottom: 25 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }}>
+        <SkeletonCircle size={24} style={{ borderRadius: 6 }} />
+        <SkeletonBox width="60%" height={16} radius={8} style={{ marginLeft: 10 }} />
+      </View>
+      <View style={skStyles.menuCard}>
+        {[0, 1, 2].map(i => (
+          <View key={i} style={{ padding: 16, flexDirection: 'row', alignItems: 'flex-start' }}>
+            <SkeletonCircle size={10} style={{ marginTop: 4, marginRight: 12 }} />
+            <View style={{ flex: 1 }}>
+              <SkeletonBox width="90%" height={12} radius={6} style={{ marginBottom: 8 }} />
+              <SkeletonBox width="70%" height={12} radius={6} />
+            </View>
+          </View>
+        ))}
+      </View>
+    </View>
+
+    {/* Metadata Section placeholder */}
+    <View style={{ marginBottom: 25 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }}>
+        <SkeletonCircle size={24} style={{ borderRadius: 6 }} />
+        <SkeletonBox width="50%" height={16} radius={8} style={{ marginLeft: 10 }} />
+      </View>
+      <View style={skStyles.menuCard}>
+        <View style={{ padding: 20, flexDirection: 'row', justifyContent: 'space-between' }}>
+          <SkeletonBox width="30%" height={14} radius={7} />
+          <SkeletonBox width="40%" height={14} radius={7} />
+        </View>
+        <View style={skStyles.divider} />
+        <View style={{ padding: 20, flexDirection: 'row', justifyContent: 'space-between' }}>
+          <SkeletonBox width="35%" height={14} radius={7} />
+          <SkeletonBox width="35%" height={14} radius={7} />
+        </View>
+      </View>
+    </View>
+
+    <SkeletonBox width="100%" height={56} radius={16} />
+  </View>
+);
+
+// ─── Wellness Tracker skeleton ────────────────────────────────────────────────
+export const WellnessTrackerSkeleton = () => (
+  <View style={{ padding: 20 }}>
+    {/* Header stats grid */}
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 25, justifyContent: 'space-between' }}>
+      {[0, 1, 2, 3].map(i => (
+        <View key={i} style={[skStyles.homeStatCard, { width: (SCREEN_W - 40 - 12) / 2 }]}>
+          <SkeletonCircle size={38} style={{ borderRadius: 12, marginBottom: 15 }} />
+          <SkeletonBox width="70%" height={22} radius={8} style={{ marginBottom: 8 }} />
+          <SkeletonBox width="50%" height={12} radius={6} />
+        </View>
+      ))}
+    </View>
+
+    {/* Daily Goals Section */}
+    <View style={skStyles.homeCard}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <SkeletonBox width="40%" height={18} radius={9} />
+        <SkeletonCircle size={24} />
+      </View>
+      {[0, 1, 2, 3].map(i => (
+        <View key={i} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15, backgroundColor: '#F9FAFB', padding: 14, borderRadius: 12 }}>
+          <SkeletonCircle size={24} style={{ marginRight: 12 }} />
+          <SkeletonBox width="75%" height={14} radius={7} />
+        </View>
+      ))}
+    </View>
+
+    {/* Chart Placeholder */}
+    <View style={[skStyles.homeCard, { height: 220 }]}>
+      <SkeletonBox width="50%" height={16} radius={8} style={{ marginBottom: 20 }} />
+      <View style={{ flex: 1, backgroundColor: '#F8FAFC', borderRadius: 12, marginBottom: 10 }} />
+      <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+        {[0, 1, 2, 3, 4, 5].map(i => <SkeletonBox key={i} width={30} height={10} radius={5} />)}
+      </View>
+    </View>
+  </View>
+);
+
 // ─── Styles ────────────────────────────────────────────────────────────────────
 const skStyles = StyleSheet.create({
   base:     { backgroundColor: '#CBD5E1' },

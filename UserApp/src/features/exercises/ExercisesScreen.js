@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import apiClient from '../../services/apiClient';
 import { SkeletonBox } from '../../shared/components/Skeleton';
 
@@ -12,18 +12,33 @@ const cardSize = (screenWidth - 60) / 2;
 const ExercisesScreen = () => {
   const navigation = useNavigation();
   const [exercises, setExercises] = useState([]);
+  const [stats, setStats] = useState({ completedToday: 0, totalExercises: 0, streak: 0, totalPoints: 0 });
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    apiClient.get('/user/exercises')
-      .then(res => setExercises(res.data))
-      .catch(err => console.error(err))
-      .finally(() => setIsLoading(false));
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      setIsLoading(true);
 
-  const completedCount = 3;
-  const totalCount = exercises.length || 5;
-  const progress = totalCount > 0 ? completedCount / totalCount : 0;
+      Promise.all([
+        apiClient.get('/exercises'),
+        apiClient.get('/exercises/stats'),
+      ])
+        .then(([exRes, statsRes]) => {
+          if (active) {
+            setExercises(exRes.data);
+            setStats(statsRes.data);
+          }
+        })
+        .catch(err => console.error(err))
+        .finally(() => { if (active) setIsLoading(false); });
+
+      return () => { active = false; };
+    }, [])
+  );
+
+  const totalCount = stats.totalExercises || exercises.length || 1;
+  const progress = totalCount > 0 ? Math.min(stats.completedToday / totalCount, 1) : 0;
 
   const getExerciseIcon = (type) => {
     switch (type?.toLowerCase()) {
@@ -50,7 +65,7 @@ const ExercisesScreen = () => {
           <View style={styles.progressTop}>
             <View>
               <Text style={styles.progressTitle}>Today's Progress</Text>
-              <Text style={styles.progressSub}>{completedCount} of {totalCount} completed</Text>
+              <Text style={styles.progressSub}>{stats.completedToday} of {totalCount} completed</Text>
             </View>
             <View style={styles.progressCircle}>
               <Text style={styles.progressPercent}>{Math.round(progress * 100)}%</Text>
@@ -59,9 +74,15 @@ const ExercisesScreen = () => {
           <View style={styles.progressBarBg}>
             <Animated.View style={[styles.progressBarFill, { width: `${progress * 100}%` }]} />
           </View>
-          <View style={styles.streakRow}>
-            <Icon name="flame" size={18} color="#F59E0B" style={{ marginRight: 6 }} />
-            <Text style={styles.streakText}>7 day streak! Keep going!</Text>
+          <View style={styles.statsRow}>
+            <View style={styles.statItem}>
+              <Icon name="flame" size={18} color="#F59E0B" />
+              <Text style={styles.statText}>{stats.streak} day streak</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Icon name="star" size={18} color="#8B5CF6" />
+              <Text style={styles.statText}>{stats.totalPoints} pts</Text>
+            </View>
           </View>
         </Animated.View>
 
@@ -120,8 +141,9 @@ const styles = StyleSheet.create({
   progressPercent: { fontSize: 16, fontWeight: 'bold', color: '#2563EB' },
   progressBarBg: { height: 8, backgroundColor: '#E5E7EB', borderRadius: 4, overflow: 'hidden' },
   progressBarFill: { height: '100%', backgroundColor: '#2563EB', borderRadius: 4 },
-  streakRow: { flexDirection: 'row', alignItems: 'center', marginTop: 12 },
-  streakText: { fontSize: 14, color: '#F59E0B', fontWeight: '600' },
+  statsRow: { flexDirection: 'row', alignItems: 'center', marginTop: 12, gap: 20 },
+  statItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  statText: { fontSize: 14, fontWeight: '600', color: '#374151' },
 
   grid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 20, gap: 15, justifyContent: 'space-between' },
   exerciseCard: { width: cardSize, borderRadius: 20, padding: 18, marginBottom: 0 },

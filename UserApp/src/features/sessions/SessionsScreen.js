@@ -45,8 +45,17 @@ const SessionsScreen = () => {
       });
     };
 
+    const onStatusUpdate = (updatedSess) => {
+      setSessions(prev => prev.map(s => s._id === updatedSess._id ? { ...s, status: updatedSess.status, completionOtp: updatedSess.completionOtp } : s));
+    };
+
     socket.on('new_appointment', onNewAppointment);
-    return () => socket.off('new_appointment', onNewAppointment);
+    socket.on('session_status_update', onStatusUpdate);
+    
+    return () => {
+      socket.off('new_appointment', onNewAppointment);
+      socket.off('session_status_update', onStatusUpdate);
+    };
   }, []);
 
   const onRefresh = () => { setRefreshing(true); fetchSessions(true); };

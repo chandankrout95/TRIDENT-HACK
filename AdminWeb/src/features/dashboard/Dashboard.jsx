@@ -23,7 +23,32 @@ const StatCard = ({ title, value, icon: Icon, trend, colorClass }) => (
   </div>
 );
 
+const SkeletonCard = () => (
+  <div className="relative overflow-hidden bg-white/70 backdrop-blur-xl border border-white/40 p-6 rounded-3xl shadow-lg shadow-slate-200/50">
+    <div className="animate-pulse flex justify-between items-start mb-4">
+      <div className="h-12 w-12 bg-slate-200 rounded-2xl"></div>
+      <div className="h-6 w-16 bg-slate-200 rounded-lg"></div>
+    </div>
+    <div className="animate-pulse">
+      <div className="h-4 w-24 bg-slate-200 rounded mb-2"></div>
+      <div className="h-8 w-16 bg-slate-200 rounded"></div>
+    </div>
+  </div>
+);
+
 const Dashboard = () => {
+  const [stats, setStats] = React.useState(null);
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    import('../../services/apiClient').then(({ default: apiClient }) => {
+      apiClient.get('/admin/stats')
+        .then(res => setStats(res.data))
+        .catch(err => console.error('Failed to fetch stats:', err))
+        .finally(() => setIsLoading(false));
+    });
+  }, []);
+
   return (
     <div className="max-w-7xl mx-auto animate-fade-in-up">
       <div className="mb-8">
@@ -32,38 +57,50 @@ const Dashboard = () => {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <StatCard 
-          title="Total Patients Active" 
-          value="1,024" 
-          icon={Users} 
-          trend="+12.5%" 
-          colorClass="bg-blue-500 text-blue-600"
-        />
-        <StatCard 
-          title="Verified Therapists" 
-          value="156" 
-          icon={UserCog} 
-          trend="+4.2%" 
-          colorClass="bg-indigo-500 text-indigo-600"
-        />
-        <StatCard 
-          title="Sessions Today" 
-          value="42" 
-          icon={CalendarDays} 
-          colorClass="bg-emerald-500 text-emerald-600"
-        />
-        <StatCard 
-          title="Server Health" 
-          value="99.9%" 
-          icon={Activity} 
-          colorClass="bg-rose-500 text-rose-600"
-        />
-        <StatCard 
-          title="Security Alerts" 
-          value="0 Issues" 
-          icon={ShieldCheck} 
-          colorClass="bg-amber-500 text-amber-600"
-        />
+        {isLoading ? (
+          <>
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </>
+        ) : (
+          <>
+            <StatCard 
+              title="Total Patients Active" 
+              value={stats?.totalPatients || 0} 
+              icon={Users} 
+              trend="+12.5%" 
+              colorClass="bg-blue-500 text-blue-600"
+            />
+            <StatCard 
+              title="Verified Therapists" 
+              value={stats?.verifiedTherapists || 0} 
+              icon={UserCog} 
+              trend="+4.2%" 
+              colorClass="bg-indigo-500 text-indigo-600"
+            />
+            <StatCard 
+              title="Sessions Today" 
+              value={stats?.sessionsToday || 0} 
+              icon={CalendarDays} 
+              colorClass="bg-emerald-500 text-emerald-600"
+            />
+            <StatCard 
+              title="Server Health" 
+              value={stats?.serverHealth || "99.9%"} 
+              icon={Activity} 
+              colorClass="bg-rose-500 text-rose-600"
+            />
+            <StatCard 
+              title="Security Alerts" 
+              value={stats?.securityAlerts || "0 Issues"} 
+              icon={ShieldCheck} 
+              colorClass="bg-amber-500 text-amber-600"
+            />
+          </>
+        )}
       </div>
     </div>
   );

@@ -63,7 +63,25 @@ const UsersList = () => {
           </thead>
           <tbody>
               {isLoading ? (
-                <tr><td colSpan="5" className="text-center py-4">Loading users...</td></tr>
+                <>
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <tr key={i} className="animate-pulse border-b border-slate-100">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center">
+                          <div className="h-10 w-10 bg-slate-200 rounded-full"></div>
+                          <div className="ml-4 space-y-2">
+                            <div className="h-4 w-32 bg-slate-200 rounded"></div>
+                            <div className="h-3 w-16 bg-slate-200 rounded"></div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4"><div className="h-6 w-16 bg-slate-200 rounded-lg"></div></td>
+                      <td className="px-6 py-4"><div className="h-6 w-20 bg-slate-200 rounded-lg"></div></td>
+                      <td className="px-6 py-4"><div className="h-4 w-24 bg-slate-200 rounded"></div></td>
+                      <td className="px-6 py-4 text-right"><div className="h-8 w-24 bg-slate-200 rounded ml-auto"></div></td>
+                    </tr>
+                  ))}
+                </>
               ) : filteredUsers.map((user) => (
                 <tr key={user._id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/50 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap">

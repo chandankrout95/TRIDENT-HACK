@@ -16,11 +16,11 @@ const Login = () => {
     setError(null);
     try {
       const res = await apiClient.post('/auth/login', { email, password });
-      if (res.data.token && res.data.role === 'admin') {
+      if (res.data.token && res.data.user?.role === 'admin') {
         localStorage.setItem('adminToken', res.data.token);
         dispatch(loginAdmin({ 
           token: res.data.token, 
-          user: { email: res.data.email, role: res.data.role } 
+          user: { email: res.data.user.email, role: res.data.user.role } 
         }));
       } else {
         setError('Unauthorized: Admin access required.');
@@ -41,7 +41,7 @@ const Login = () => {
 
       <div className="max-w-md w-full space-y-8 bg-white/70 backdrop-blur-xl border border-white/40 p-10 rounded-3xl shadow-xl shadow-slate-200/50 relative z-10 animate-fade-in-up">
         <div>
-          <h2 className="text-center text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-emerald-500 tracking-tight">TridentAdmin</h2>
+          <h2 className="text-center text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-emerald-500 tracking-tight">Health Admin</h2>
           <p className="mt-3 text-center text-sm text-slate-500 font-medium">Log in to manage the platform backend.</p>
         </div>
         <form className="mt-8 space-y-5" onSubmit={handleLogin}>
@@ -53,7 +53,7 @@ const Login = () => {
                 type="email"
                 required
                 className="appearance-none relative block w-full px-4 py-3 bg-slate-50 border border-slate-200 placeholder-slate-400 text-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 transition-all sm:text-sm font-medium"
-                placeholder="admin@trident.com"
+                placeholder="admin@healthadmin.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />

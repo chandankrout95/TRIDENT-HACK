@@ -1,38 +1,62 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import {
+  View, Text, TextInput, TouchableOpacity, StyleSheet,
+  Alert, ActivityIndicator, StatusBar,
+} from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useDispatch } from 'react-redux';
 import apiClient from '../../services/apiClient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setCredentials } from '../../store/authSlice';
 import { useNavigation } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 const LoginScreen = () => {
   const navigation = useNavigation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const dispatch = useDispatch(); // normally used for loginUser thunk if doing direct login
+  const dispatch = useDispatch();
 
   const handleLogin = async () => {
-    if (!email) return Alert.alert('Error', 'Email is required');
+    if (!email || !password) return Alert.alert('Error', 'Email and password are required');
 
     setIsLoading(true);
     try {
       const res = await apiClient.post('/auth/login', { email, password });
 
-      // If backend says OTP sent
-      if (res.data.message === 'OTP sent to email') {
-        navigation.navigate('VerifyOtp', { email });
-      } else if (res.data.token) {
-        // Direct password login success
+      if (res.data.token) {
         await AsyncStorage.setItem('userToken', res.data.token);
         dispatch(setCredentials({
           token: res.data.token,
-          user: res.data.user || { email }
+          user: res.data.user,
         }));
       }
     } catch (error) {
-      Alert.alert('Login failed', error.response?.data?.message || error.message);
+      const msg = error.response?.data?.message || error.message;
+      if (error.response?.data?.needsVerification) {
+        Alert.alert(
+          'Email Not Verified',
+          'Please verify your email to continue.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Verify Now',
+              onPress: async () => {
+                try {
+                  await apiClient.post('/auth/resend-otp', { email });
+                  navigation.navigate('VerifyOtp', { email });
+                } catch (e) {
+                  Alert.alert('Error', 'Failed to resend OTP');
+                }
+              },
+            },
+          ]
+        );
+      } else {
+        Alert.alert('Login Failed', msg);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -40,42 +64,177 @@ const LoginScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome Back</Text>
-      <Text style={styles.subtitle}>Sign in to your account</Text>
+      <StatusBar barStyle="dark-content" backgroundColor="#F0F4FF" />
+      <KeyboardAwareScrollView
+        contentContainerStyle={styles.scrollContent}
+        enableOnAndroid
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header */}
+        <View style={styles.headerSection}>
+          <View style={styles.iconBadge}>
+            <Icon name="heart" size={28} color="#4F46E5" />
+          </View>
+          <Text style={styles.title}>Welcome Back</Text>
+          <Text style={styles.subtitle}>Sign in to continue your journey</Text>
+        </View>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        placeholderTextColor="#9CA3AF"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-      />
+        {/* Form */}
+        <View style={styles.formCard}>
+          <View style={styles.inputWrapper}>
+            <Icon name="mail-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Email Address"
+              placeholderTextColor="#9CA3AF"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+            />
+          </View>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Password (optional for OTP)"
-        placeholderTextColor="#9CA3AF"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
+          <View style={styles.inputWrapper}>
+            <Icon name="lock-closed-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
+            <TextInput
+              style={[styles.input, { flex: 1 }]}
+              placeholder="Password"
+              placeholderTextColor="#9CA3AF"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+            />
+            <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
+              <Icon name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color="#9CA3AF" />
+            </TouchableOpacity>
+          </View>
 
-      <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={isLoading}>
-        {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Continue</Text>}
-      </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, isLoading && styles.buttonDisabled]}
+            onPress={handleLogin}
+            disabled={isLoading}
+            activeOpacity={0.85}
+          >
+            {isLoading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Sign In</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        {/* Footer */}
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Don't have an account? </Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+            <Text style={styles.footerLink}>Register</Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAwareScrollView>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, justifyContent: 'center', backgroundColor: '#F9FAFB' },
-  title: { fontSize: 32, fontWeight: 'bold', color: '#111827', marginBottom: 10 },
-  subtitle: { fontSize: 16, color: '#6B7280', marginBottom: 40 },
-  input: { backgroundColor: '#FFF', color: '#111827', padding: 15, borderRadius: 10, borderWidth: 1, borderColor: '#D1D5DB', marginBottom: 20, fontSize: 16 },
-  button: { backgroundColor: '#2563EB', padding: 15, borderRadius: 10, alignItems: 'center', shadowColor: '#2563EB', shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
-  buttonText: { color: '#FFF', fontSize: 18, fontWeight: 'bold' }
+  container: {
+    flex: 1,
+    backgroundColor: '#F0F4FF',
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: 24,
+  },
+  headerSection: {
+    alignItems: 'center',
+    marginBottom: 32,
+  },
+  iconBadge: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: '#EEF2FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#1E1B4B',
+    marginBottom: 6,
+  },
+  subtitle: {
+    fontSize: 15,
+    color: '#6B7280',
+    textAlign: 'center',
+  },
+  formCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 24,
+    shadowColor: '#4F46E5',
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 6,
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F9FAFB',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    marginBottom: 16,
+    paddingHorizontal: 14,
+  },
+  inputIcon: {
+    marginRight: 10,
+  },
+  input: {
+    flex: 1,
+    padding: 14,
+    fontSize: 15,
+    color: '#111827',
+  },
+  eyeBtn: {
+    padding: 8,
+  },
+  button: {
+    backgroundColor: '#4F46E5',
+    padding: 16,
+    borderRadius: 14,
+    alignItems: 'center',
+    marginTop: 8,
+    shadowColor: '#4F46E5',
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 6,
+  },
+  buttonDisabled: {
+    opacity: 0.7,
+  },
+  buttonText: {
+    color: '#FFF',
+    fontSize: 17,
+    fontWeight: '700',
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 24,
+  },
+  footerText: {
+    color: '#6B7280',
+    fontSize: 14,
+  },
+  footerLink: {
+    color: '#4F46E5',
+    fontSize: 14,
+    fontWeight: '700',
+  },
 });
 
 export default LoginScreen;

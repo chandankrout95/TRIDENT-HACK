@@ -46,7 +46,7 @@ const BookingScreen = ({ route }) => {
         description: `Session with ${therapist.name || 'Therapist'}`,
         image: 'https://i.imgur.com/3g7nmJC.png',
         currency: 'INR',
-        key: 'rzp_test_1DP5mmOlF5G5ag', // Test key — replace with your own
+        key: 'rzp_test_SKeEYQJMeXXLbI', // User provided key
         amount: (therapist.hourlyRate || 80) * 100, // Razorpay takes amount in paise
         name: 'Trident Health',
         prefill: { email: 'user@trident.com', contact: '9999999999', name: 'Patient' },
@@ -114,7 +114,7 @@ const BookingScreen = ({ route }) => {
             <Text style={styles.summarySpec}>{therapist.specialization || 'General'}</Text>
           </View>
           <View style={styles.rateTag}>
-            <Text style={styles.rateText}>${therapist.hourlyRate || 80}/hr</Text>
+            <Text style={styles.rateText}>₹{therapist.hourlyRate || 80}/hr</Text>
           </View>
         </View>
 
@@ -170,7 +170,7 @@ const BookingScreen = ({ route }) => {
           </View>
           <View style={[styles.summaryRow, styles.totalRow]}>
             <Text style={styles.totalLabel}>Total</Text>
-            <Text style={styles.totalVal}>${therapist.hourlyRate || 80}.00</Text>
+            <Text style={styles.totalVal}>₹{therapist.hourlyRate || 80}.00</Text>
           </View>
         </View>
       </ScrollView>
@@ -183,7 +183,7 @@ const BookingScreen = ({ route }) => {
           disabled={!selectedSlot || isBooking}
         >
           <Icon name="card" size={22} color="#FFF" style={{ marginRight: 10 }} />
-          <Text style={styles.payBtnText}>{isBooking ? 'Processing...' : `Pay $${therapist.hourlyRate || 80} & Book`}</Text>
+          <Text style={styles.payBtnText}>{isBooking ? 'Processing...' : `Pay ₹${therapist.hourlyRate || 80} & Book`}</Text>
         </TouchableOpacity>
       </View>
     </View>

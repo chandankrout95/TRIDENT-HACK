@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl, Image } from 'react-native';
 import Animated, { FadeInUp, SlideInRight } from 'react-native-reanimated';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import apiClient from '../../services/apiClient';
 import Skeleton from '../../components/common/Skeleton';
 import { getSocket } from '../../services/socket';
 
 const AppointmentScreen = () => {
+  const navigation = useNavigation();
   const [appointments, setAppointments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -32,8 +33,17 @@ const AppointmentScreen = () => {
       });
     };
 
+    const onStatusUpdate = (updatedSess) => {
+      setAppointments(prev => prev.map(s => s._id === updatedSess._id ? { ...s, status: updatedSess.status, completionOtp: updatedSess.completionOtp } : s));
+    };
+
     socket.on('new_appointment', onNewAppointment);
-    return () => socket.off('new_appointment', onNewAppointment);
+    socket.on('session_status_update', onStatusUpdate);
+    
+    return () => {
+      socket.off('new_appointment', onNewAppointment);
+      socket.off('session_status_update', onStatusUpdate);
+    };
   }, []);
 
   const fetchAppointments = async (silent = false) => {
@@ -57,7 +67,11 @@ const AppointmentScreen = () => {
   });
 
   const renderAppointment = ({ item, index }) => (
-    <TouchableOpacity style={styles.card} activeOpacity={0.8}>
+    <TouchableOpacity 
+      style={styles.card} 
+      activeOpacity={0.8}
+      onPress={() => navigation.navigate('AppointmentDetailsScreen', { session: item })}
+    >
       <View style={styles.cardHeader}>
         <Text style={styles.time}>{item.timeSlot || '09:00 AM'}</Text>
         <View style={[styles.statusBadge, { backgroundColor: item.status === 'confirmed' ? '#D1FAE5' : '#F3F4F6' }]}>

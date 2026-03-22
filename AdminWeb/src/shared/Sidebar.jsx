@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, UserCog, Calendar, BellRing, FileBarChart, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { LayoutDashboard, Users, UserCog, Calendar, BellRing, FileBarChart, ChevronLeft, ChevronRight, X, ShieldAlert } from 'lucide-react';
 
 const Sidebar = ({ isCollapsed, setIsCollapsed, isMobileMenuOpen, setIsMobileMenuOpen }) => {
   const menuItems = [
@@ -10,6 +10,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobileMenuOpen, setIsMobileMen
     { name: 'Sessions', icon: Calendar, path: '/sessions' },
     { name: 'Notifications', icon: BellRing, path: '/notifications' },
     { name: 'Reports', icon: FileBarChart, path: '/reports' },
+    { name: 'Emergency', icon: ShieldAlert, path: '/emergency' },
   ];
 
   return (
@@ -27,7 +28,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobileMenuOpen, setIsMobileMen
         ${!isMobileMenuOpen && isCollapsed ? 'lg:w-20' : 'lg:w-64'}`}
       >
         <div className="w-full flex items-center justify-between px-5 mb-8">
-          {(!isCollapsed || isMobileMenuOpen) && <span className="text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-emerald-500 tracking-tight truncate">TridentAdmin</span>}
+          {(!isCollapsed || isMobileMenuOpen) && <span className="text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-emerald-500 tracking-tight truncate">Health Admin</span>}
           <button 
             onClick={() => isMobileMenuOpen ? setIsMobileMenuOpen(false) : setIsCollapsed(!isCollapsed)} 
             className="p-1.5 rounded-xl bg-slate-100/80 hover:bg-slate-200 text-slate-500 hover:text-indigo-600 transition-colors mx-auto shadow-sm"

@@ -20,20 +20,21 @@ export const loginTherapist = createAsyncThunk(
 const authSlice = createSlice({
   name: 'auth',
   initialState: {
-    therapist: null,
+    user: null,
     token: null,
     isLoading: false,
     error: null,
   },
   reducers: {
     setCredentials: (state, action) => {
-      state.therapist = action.payload.therapist;
+      state.user = action.payload.user || action.payload.therapist || action.payload;
       state.token = action.payload.token;
     },
     logout: (state) => {
-      state.therapist = null;
+      state.user = null;
       state.token = null;
       AsyncStorage.removeItem('therapistToken');
+      AsyncStorage.removeItem('persist:root');
     },
   },
   extraReducers: (builder) => {
@@ -44,7 +45,7 @@ const authSlice = createSlice({
       })
       .addCase(loginTherapist.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.therapist = action.payload; 
+        state.user = action.payload.user || action.payload; 
         state.token = action.payload.token;
       })
       .addCase(loginTherapist.rejected, (state, action) => {

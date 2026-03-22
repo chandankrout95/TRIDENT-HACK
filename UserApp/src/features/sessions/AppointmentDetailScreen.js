@@ -1,12 +1,25 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
+import { getSocket } from '../../services/socket';
 
 const AppointmentDetailScreen = ({ route }) => {
   const navigation = useNavigation();
-  const session = route?.params?.session || {};
+  const [session, setSession] = useState(route?.params?.session || {});
   const therapist = session.therapist || {};
+
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket) return;
+    const onStatusUpdate = (updatedSess) => {
+      if (updatedSess._id === session._id) {
+        setSession(prev => ({ ...prev, status: updatedSess.status, completionOtp: updatedSess.completionOtp }));
+      }
+    };
+    socket.on('session_status_update', onStatusUpdate);
+    return () => socket.off('session_status_update', onStatusUpdate);
+  }, [session._id]);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -128,10 +141,21 @@ const AppointmentDetailScreen = ({ route }) => {
             </View>
             <View>
               <Text style={styles.infoLabel}>Consultation Fee</Text>
-              <Text style={styles.infoValue}>${therapist.hourlyRate || 80}.00</Text>
+              <Text style={styles.infoValue}>₹{therapist.hourlyRate || 80}.00</Text>
             </View>
           </View>
         </View>
+
+        {/* OTP Section for Validation */}
+        {session.status === 'confirmed' && session.completionOtp && (
+          <View style={styles.otpSection}>
+            <Text style={styles.otpSectionTitle}>Session Completion PIN</Text>
+            <Text style={styles.otpSectionSub}>Please share this 4-digit code with your therapist at the end of the session to formally complete the appointment.</Text>
+            <View style={styles.otpBox}>
+              <Text style={styles.otpText}>{session.completionOtp}</Text>
+            </View>
+          </View>
+        )}
 
         {/* Notes */}
         <View style={styles.notesSection}>
@@ -228,6 +252,12 @@ const styles = StyleSheet.create({
   tipsSection: { margin: 20, padding: 20, backgroundColor: '#FFF', borderRadius: 16, elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 8 },
   tipRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 14 },
   tipText: { fontSize: 14, color: '#374151', flex: 1 },
+
+  otpSection: { marginHorizontal: 20, marginBottom: 20, padding: 20, backgroundColor: '#FFF', borderRadius: 16, elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 8, alignItems: 'center' },
+  otpSectionTitle: { fontSize: 16, fontWeight: 'bold', color: '#111827', marginBottom: 4 },
+  otpSectionSub: { fontSize: 13, color: '#6B7280', textAlign: 'center', marginBottom: 16, lineHeight: 20 },
+  otpBox: { backgroundColor: '#F3F4F6', paddingVertical: 12, paddingHorizontal: 32, borderRadius: 12, borderWidth: 1, borderColor: '#D1D5DB' },
+  otpText: { fontSize: 32, fontWeight: 'bold', letterSpacing: 12, color: '#4338CA' },
 
   bottomBar: { position: 'absolute', bottom: 0, left: 0, right: 0, flexDirection: 'row', padding: 20, backgroundColor: '#FFF', borderTopWidth: 1, borderColor: '#E5E7EB', gap: 12, elevation: 10, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 10 },
   cancelBtn: { flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingVertical: 14, borderRadius: 14, backgroundColor: '#FEE2E2', borderWidth: 1, borderColor: '#FCA5A5' },

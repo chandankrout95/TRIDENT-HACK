@@ -59,7 +59,7 @@ const SearchScreen = () => {
         <View style={styles.resultMeta}>
           <View style={styles.starsRow}>{renderStar(item.rating || 4.5)}</View>
           <Text style={styles.resultReviews}>({item.reviewCount || 0})</Text>
-          <Text style={styles.resultRate}>${item.hourlyRate || 80}/hr</Text>
+          <Text style={styles.resultRate}>₹{item.hourlyRate || 80}/hr</Text>
         </View>
       </View>
       <Icon name="chevron-forward" size={22} color="#9CA3AF" />

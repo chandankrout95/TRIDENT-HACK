@@ -6,6 +6,7 @@ const sessionSchema = new mongoose.Schema({
   date: { type: Date, required: true },
   timeSlot: { type: String, required: true }, // '09:00 AM - 10:00 AM'
   status: { type: String, enum: ['pending', 'confirmed', 'completed', 'cancelled'], default: 'pending' },
+  completionOtp: { type: String },
   notes: { type: String }
 }, { timestamps: true });
 

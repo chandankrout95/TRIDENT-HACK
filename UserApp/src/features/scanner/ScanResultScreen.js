@@ -1,12 +1,12 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Linking } from 'react-native';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 
 const ScanResultScreen = ({ route }) => {
   const navigation = useNavigation();
-  const { success } = route.params || { success: false };
+  const { success, analysis } = route.params || { success: false, analysis: null };
 
   if (!success) {
     return (
@@ -29,12 +29,10 @@ const ScanResultScreen = ({ route }) => {
     );
   }
 
-  // Mocked Medicine Identification Data
+  // Use AI Extracted Data
   const results = [
-    { label: 'Medicine Name', value: 'Amoxicillin 500mg', icon: 'medkit', color: '#2563EB', bg: '#DBEAFE' },
-    { label: 'Dosage Form', value: 'Capsule', icon: 'layers', color: '#10B981', bg: '#D1FAE5' },
-    { label: 'Common Use', value: 'Bacterial Infections', icon: 'bug', color: '#EF4444', bg: '#FEE2E2' },
-    { label: 'Typical Schedule', value: 'Every 8 hours', icon: 'time', color: '#F59E0B', bg: '#FEF3C7' },
+    { label: 'Condition / Disease', value: analysis?.disease || 'Unknown', icon: 'pulse', color: '#EF4444', bg: '#FEE2E2' },
+    { label: 'Medicines', value: analysis?.medicine || 'Unknown', icon: 'medkit', color: '#2563EB', bg: '#DBEAFE' },
   ];
 
   return (
@@ -75,13 +73,20 @@ const ScanResultScreen = ({ route }) => {
         <Animated.View entering={FadeInUp.delay(400).duration(600)} style={styles.aiInsightCard}>
           <View style={styles.aiHeader}>
             <Icon name="sparkles" size={20} color="#F59E0B" />
-            <Text style={styles.aiTitle}>Sia's Caution</Text>
+            <Text style={styles.aiTitle}>Sia's Assistant Guide</Text>
           </View>
-          <Text style={styles.aiText}>"This medication is common for infections. Make sure to complete the full course even if you feel better. Avoid dairy 1 hour before and after taking this."</Text>
+          <Text style={styles.aiText}>{analysis?.instructions || 'No instructions provided.'}</Text>
         </Animated.View>
 
+        {analysis?.buy_link && (
+          <TouchableOpacity style={styles.buyBtn} onPress={() => Linking.openURL(analysis.buy_link)}>
+            <Icon name="cart" size={20} color="#FFF" style={{ marginRight: 8 }} />
+            <Text style={styles.buyBtnText}>Buy {analysis.medicine?.split(',')[0]} Online</Text>
+          </TouchableOpacity>
+        )}
+
         <TouchableOpacity style={styles.saveBtn} onPress={() => navigation.popToTop()}>
-          <Text style={styles.saveBtnText}>Save to Journal</Text>
+          <Text style={styles.saveBtnText}>Done</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>
@@ -119,13 +124,16 @@ const styles = StyleSheet.create({
   resultLabel: { fontSize: 13, color: '#6B7280', textTransform: 'uppercase', fontWeight: '600', marginBottom: 4 },
   resultValue: { fontSize: 18, fontWeight: 'bold', color: '#111827' },
 
-  aiInsightCard: { backgroundColor: '#FFFBEB', padding: 20, borderRadius: 20, borderWidth: 1, borderColor: '#FEF3C7', marginBottom: 30 },
+  aiInsightCard: { backgroundColor: '#FFFBEB', padding: 20, borderRadius: 20, borderWidth: 1, borderColor: '#FEF3C7', marginBottom: 20 },
   aiHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
   aiTitle: { fontSize: 16, fontWeight: 'bold', color: '#D97706', marginLeft: 8 },
-  aiText: { fontSize: 15, color: '#92400E', lineHeight: 22, fontStyle: 'italic' },
+  aiText: { fontSize: 15, color: '#92400E', lineHeight: 24 },
 
-  saveBtn: { backgroundColor: '#2563EB', paddingVertical: 16, borderRadius: 16, alignItems: 'center', elevation: 3, shadowColor: '#2563EB', shadowOpacity: 0.3, shadowRadius: 8 },
-  saveBtnText: { color: '#FFF', fontSize: 18, fontWeight: 'bold' }
+  buyBtn: { flexDirection: 'row', backgroundColor: '#10B981', paddingVertical: 16, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginBottom: 15, elevation: 3, shadowColor: '#10B981', shadowOpacity: 0.3, shadowRadius: 8 },
+  buyBtnText: { color: '#FFF', fontSize: 18, fontWeight: 'bold' },
+
+  saveBtn: { backgroundColor: '#E5E7EB', paddingVertical: 16, borderRadius: 16, alignItems: 'center' },
+  saveBtnText: { color: '#374151', fontSize: 18, fontWeight: 'bold' }
 });
 
 export default ScanResultScreen;

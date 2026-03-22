@@ -64,7 +64,7 @@ const ProfileScreen = () => {
             </View>
           </View>
           <Animated.Text entering={FadeInUp.delay(250).duration(400)} style={styles.name}>
-            {user?.email?.split('@')[0] || 'User Name'}
+            {user?.name || user?.email?.split('@')[0] || 'User Name'}
           </Animated.Text>
           <Animated.Text entering={FadeInUp.delay(350).duration(400)} style={styles.email}>
             {user?.email || 'user@example.com'}

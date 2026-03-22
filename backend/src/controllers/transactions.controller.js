@@ -31,10 +31,6 @@ export const getMyEarnings = async (req, res, next) => {
   try {
     const therapistId = req.user._id;
 
-    // We can also calculate based on completed sessions strictly, OR based on 'earning' transactions
-    // Assuming 500 per completed session for simplicity if no transaction exists,
-    // but better to just sum up all 'earning' transactions.
-    
     const earnings = await Transaction.aggregate([
       { $match: { therapist: therapistId, type: 'earning', status: 'completed' } },
       { $group: { _id: null, total: { $sum: '$amount' } } }
@@ -49,16 +45,49 @@ export const getMyEarnings = async (req, res, next) => {
     const totalWithdrawn = withdrawals.length > 0 ? withdrawals[0].total : 0;
     const availableBalance = totalEarned - totalWithdrawn;
 
-    // Let's also fetch the 5 most recent transactions for the dashboard
+    // This month earnings
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthEarnings = await Transaction.aggregate([
+      { $match: { therapist: therapistId, type: 'earning', status: 'completed', createdAt: { $gte: startOfMonth } } },
+      { $group: { _id: null, total: { $sum: '$amount' }, count: { $sum: 1 } } }
+    ]);
+
+    // Today earnings
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const todayEarnings = await Transaction.aggregate([
+      { $match: { therapist: therapistId, type: 'earning', status: 'completed', createdAt: { $gte: startOfDay } } },
+      { $group: { _id: null, total: { $sum: '$amount' }, count: { $sum: 1 } } }
+    ]);
+
+    // Pending withdrawals
+    const pendingWithdrawals = await Transaction.aggregate([
+      { $match: { therapist: therapistId, type: 'withdrawal', status: 'pending' } },
+      { $group: { _id: null, total: { $sum: '$amount' } } }
+    ]);
+
+    // Recent transactions
     const recentTransactions = await Transaction.find({ therapist: therapistId })
       .sort({ createdAt: -1 })
-      .limit(5);
+      .limit(10);
+
+    // Total completed sessions
+    const completedSessions = await Session.countDocuments({
+      therapist: therapistId,
+      status: 'completed',
+    }).catch(() => 0);
 
     res.json({
       totalEarned,
       totalWithdrawn,
       availableBalance,
-      recentTransactions
+      thisMonth: monthEarnings.length > 0 ? monthEarnings[0].total : 0,
+      thisMonthSessions: monthEarnings.length > 0 ? monthEarnings[0].count : 0,
+      today: todayEarnings.length > 0 ? todayEarnings[0].total : 0,
+      todaySessions: todayEarnings.length > 0 ? todayEarnings[0].count : 0,
+      pendingAmount: pendingWithdrawals.length > 0 ? pendingWithdrawals[0].total : 0,
+      completedSessions,
+      recentTransactions,
     });
   } catch (error) {
     next(error);

@@ -27,6 +27,11 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
+    if (!error.response && error.message) {
+      if (error.message.includes('Network Error') || error.message.includes('timeout') || error.message.includes('Network request failed')) {
+        error.message = 'Please check your internet connection and try again.';
+      }
+    }
     console.error('API Error:', error.response?.data?.message || error.message);
     return Promise.reject(error);
   }

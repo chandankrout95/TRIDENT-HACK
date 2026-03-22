@@ -32,7 +32,7 @@ const ChatScreen = ({ route }) => {
   const [highlightedMessageId, setHighlightedMessageId] = useState(null);
   
   const { messages, isLoading } = useSelector(state => state.chat);
-  const { therapist } = useSelector(state => state.auth);
+  const { user: therapist } = useSelector(state => state.auth);
   const flatListRef = useRef();
   const socketListenerRef = useRef(false);
   const swipeableRefs = useRef(new Map());

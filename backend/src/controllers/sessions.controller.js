@@ -1,4 +1,6 @@
 import Session from '../models/sessions.model.js';
+import Transaction from '../models/transactions.model.js';
+import TherapistProfile from '../models/therapists.model.js';
 import { getIO } from '../config/socket.js';
 
 // Helper to find socket ID for a user
@@ -63,9 +65,28 @@ const updateSessionStatus = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
-    const session = await Session.findByIdAndUpdate(id, { status }, { new: true });
     
+    const session = await Session.findById(id).populate('therapist');
     if (!session) return res.status(404).json({ message: 'Session not found' });
+
+    const prevStatus = session.status;
+    session.status = status;
+    await session.save();
+
+    // If marked as completed, create an earning transaction
+    if (status === 'completed' && prevStatus !== 'completed') {
+      const profile = await TherapistProfile.findById(session.therapist);
+      const amount = profile?.hourlyRate || 500; // Fallback to 500 if not set
+
+      await Transaction.create({
+        therapist: profile.user, // Transactions linked to User ID
+        amount,
+        type: 'earning',
+        status: 'completed',
+        description: `Session completed - client: ${session.user}`,
+      });
+    }
+    
     res.json(session);
   } catch (error) {
     next(error);

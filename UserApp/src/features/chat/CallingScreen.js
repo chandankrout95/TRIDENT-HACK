@@ -33,6 +33,7 @@ const CallingScreen = () => {
   const engineRef = useRef(null);
   const socketRef = useRef(null);
   const timeoutRef = useRef(null);
+  const targetChannelRef = useRef(channelName || `session_${Date.now()}`);
 
   // ── Call state ────────────────────────────────────────────────────────────
   const [callState, setCallState] = useState(
@@ -140,9 +141,9 @@ const CallingScreen = () => {
     }
 
     try {
-      const channel = channelName || `session_${Date.now()}`;
+      const channel = targetChannelRef.current;
       const response = await apiClient.post('/agora/token', {
-        channelName,
+        channelName: channel,
         uid: 0, // Auto-assign numeric UID (Agora requires integers, not MongoDB strings)
         role: 'publisher',
       });
@@ -150,18 +151,22 @@ const CallingScreen = () => {
       engineRef.current = engine;
 
       engine.initialize({ appId: response.data.appId });
-      engine.setChannelProfile(ChannelProfileType.ChannelProfileCommunication);
-      engine.setClientRole(ClientRoleType.ClientRoleBroadcaster);
       engine.enableAudio();
-      engine.setEnableSpeakerphone(true);
+      engine.enableLocalAudio(true); // Explicitly enable local audio
+      engine.muteLocalAudioStream(false); // Ensure audio is not muted initially
+      
+      engine.setChannelProfile(ChannelProfileType.ChannelProfileCommunication);
+      engine.setDefaultAudioRouteToSpeakerphone(isVideo); // Only default speaker for video
 
       if (isVideo) {
         engine.enableVideo();
+        engine.enableLocalVideo(true);
         engine.startPreview();
       }
 
       engine.addListener('onJoinChannelSuccess', () => {
         setCallState('connected');
+        engine.setEnableSpeakerphone(isVideo); // Update speaker dynamically
       });
 
       engine.addListener('onUserJoined', (_conn, uid) => {
@@ -177,7 +182,13 @@ const CallingScreen = () => {
         console.error('Agora error:', err);
       });
 
-      engine.joinChannel(response.data.token, channel, response.data.uid, {});
+      engine.joinChannel(response.data.token, channel, response.data.uid, {
+        clientRoleType: ClientRoleType.ClientRoleBroadcaster,
+        publishMicrophoneTrack: true,
+        publishCameraTrack: isVideo,
+        autoSubscribeAudio: true,
+        autoSubscribeVideo: true,
+      });
     } catch (err) {
       console.error('Agora init error:', err);
       Alert.alert('Connection Error', 'Unable to connect. Please try again.', [
@@ -202,7 +213,7 @@ const CallingScreen = () => {
         callerId: user?._id,
         callerName: user?.name || user?.email || 'User',
         receiverId,
-        channelName,
+        channelName: targetChannelRef.current,
         isVideo,
       });
 
