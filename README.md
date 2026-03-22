@@ -52,7 +52,7 @@ dockerhub link:-https://hub.docker.com/r/bigyajeetpatra36/mental-health-api
 To run the FastAPI server inside a container:
 ```bash
 # Build the image
-docker build -t unbothered-api .
+docker build -t  .mental-health-api
 
 # Run the container
-docker run -p 8000:8000 unbothered-api
+docker run -p 8000:8000 
