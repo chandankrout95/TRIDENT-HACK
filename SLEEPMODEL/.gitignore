@@ -1,0 +1,36 @@
+# --- Python Virtual Environments ---
+node_modules/
+venv/
+env/
+.env
+__pycache__/
+*.py[cod]
+*$py.class
+
+# --- Machine Learning Artifacts ---
+# Only ignore these if you want to keep them local. 
+# For Vercel/Render deployment, you usually NEED to upload the .pkl files.
+# datasets/
+# *.csv
+# *.xlsx
+
+# --- Sensitive Keys ---
+.env
+config.py
+credentials.json
+
+# --- OS Specific Files ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- IDE Folders ---
+.vscode/
+.idea/
+.project
+.pydevproject
+
+# --- Vercel/Build Folders ---
+.vercel/
+build/
+dist/
